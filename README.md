@@ -15,16 +15,20 @@ University of Tehran software testing coursework. Keep this repository private u
 
 Use Eclipse Temurin JDK 26. The starter POM intentionally targets Java 17 bytecode and uses JUnit Jupiter 5.10.2. Running Maven and the tests on JDK 26 does not require changing that compilation target.
 
-On Amin's Windows installation, Temurin 26.0.2.1+1 is installed separately under `%LOCALAPPDATA%/Programs/Eclipse Adoptium/`. System Java 21, persistent JAVA_HOME, and PATH are unchanged. Maven 3.9.16 is already bundled with IntelliJ IDEA 2026.2.0.1.
+On Amin's Windows installation, Temurin 26.0.2.1+1 is installed separately under `%LOCALAPPDATA%/Programs/Eclipse Adoptium/`. Java 21 remains installed for later use. Temurin 26 is the selected terminal default. Maven 3.9.16 is bundled with IntelliJ IDEA 2026.2.0.1; its bin directory is on PATH.
 
-From this repository root in PowerShell:
+After changing environment variables, open a fresh terminal (restart IntelliJ before opening a new embedded terminal).
+
+From `CA1/autopilot` in PowerShell:
 
 ```powershell
-.\Invoke-Maven.ps1 --version
-.\Invoke-Maven.ps1 test
+java --version
+javac --version
+mvn --version
+mvn clean test
 ```
 
-The helper temporarily sets JAVA_HOME for Maven, then restores it. It does not change PowerShell execution policy. If your machine's policy blocks scripts, use IntelliJ's Maven tool window instead. Other collaborators can set `CA1_JAVA_HOME` and `CA1_MAVEN_HOME` for their own installations.
+`JAVA_HOME` selects the JDK used by Maven. PATH makes `java`, `javac`, and `mvn` available as ordinary commands. No helper script is needed.
 
 ## IntelliJ settings
 
