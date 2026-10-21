@@ -1,0 +1,9 @@
+# Local IDE configuration and generated files
+**/.idea/
+*.iml
+**/target/
+*.class
+*.log
+.DS_Store
+Thumbs.db
+.tools/
