@@ -184,4 +184,15 @@ class SteeringControllerTest {
         return List.of(-Double.MIN_VALUE, -1.0, Double.NaN,
                 Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
     }
+
+
+    @Test
+    void selfCenter_setsTargetAngleToZero() {
+        steering.update(DISTANT_TARGET_DEGREES, NORMAL_SPEED_KMH);
+
+        steering.selfCenter();
+
+        assertEquals(CENTER_DEGREES, steering.getTargetAngleDegrees());
+        assertEquals(CENTER_DEGREES, steering.getCurrentAngleDegrees());
+    }
 }

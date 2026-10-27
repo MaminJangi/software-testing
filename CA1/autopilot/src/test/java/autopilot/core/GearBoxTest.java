@@ -33,6 +33,36 @@ class GearBoxTest {
         gearBox = new GearBox(speedSensor);
     }
 
+    @Test
+    void constructor_startsInPark() {
+        assertEquals(
+                GearBox.Gear.P,
+                gearBox.getCurrentGear()
+        );
+    }
+
+    @Test
+    void constructor_whenSensorIsNull_throws() {
+        assertThrows(
+                NullPointerException.class,
+                () -> new GearBox(null)
+        );
+    }
+
+    @Test
+    void setSpeedSensor_usesNewSensor() {
+        StubSpeedSensor newSensor = new StubSpeedSensor();
+        newSensor.speedKmh = 0.0;
+
+        gearBox.setSpeedSensor(newSensor);
+        gearBox.changeTo(GearBox.Gear.R);
+
+        assertEquals(
+                GearBox.Gear.R,
+                gearBox.getCurrentGear()
+        );
+    }
+
     @ParameterizedTest(name = "{0} -> {1} at {2} km/h is allowed")
     @MethodSource("allowedTransitions")
     void changeTo_whenTransitionIsAllowed_changesCurrentGear(

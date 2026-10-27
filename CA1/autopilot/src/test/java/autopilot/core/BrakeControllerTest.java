@@ -184,6 +184,19 @@ class BrakeControllerTest {
         assertEquals(ABS_LOW_PULSE, brakes.apply(MAX_PRESSURE, ABS_SPEED_KMH, GearBox.Gear.D));
     }
 
+    @Test
+    void emergencyBrake_whenGearIsParkAndWarningIsActive_preservesState() {
+        brakes.emergencyBrake(GearBox.Gear.D);
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> brakes.emergencyBrake(GearBox.Gear.P)
+        );
+
+        assertEquals(100.0, brakes.getPressure());
+        assertTrue(brakes.isWarningActive());
+    }
+
     private void activateWarningAndStartAbs() {
         brakes.emergencyBrake(GearBox.Gear.D);
         assertEquals(ABS_HIGH_PULSE, brakes.apply(MAX_PRESSURE, ABS_SPEED_KMH, GearBox.Gear.D));
