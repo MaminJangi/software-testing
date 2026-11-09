@@ -1,59 +1,66 @@
 # Software Testing
 
-University of Tehran software testing coursework. Keep this repository private until the course permits publication.
+University of Tehran software testing coursework. Each assignment contains its own Maven project and assignment description.
 
-## CA1: JUnit and parameterized tests
+## Assignments
 
-- Assignment: `CA1/SWT-05-CA1.pdf`
-- Maven project: `CA1/autopilot` (open this directory in IntelliJ)
-- Starter: https://github.com/UT-SWT/F05-CA1
+### CA1: JUnit and parameterized tests
+
+Unit testing an autonomous vehicle simulator with JUnit 5, including parameterized tests for vehicle controllers and tests for the main driving coordinator.
+
+- [Assignment description](CA1/SWT-05-CA1.pdf)
+- [Project and simulator overview](CA1/autopilot/README.md)
+- Project directory: `CA1/autopilot`
+- [Original starter repository](https://github.com/UT-SWT/F05-CA1)
 - Imported starter commit: `ea4cd26de69fe2f37569559eeb3b5b5c2831fec1`
-- The starter's MIT license is retained in `CA1/autopilot/LICENSE`.
-- Starter source code, tests, and POM are unchanged.
 
-## Environment
+### CA2: Test doubles with Mockito
 
-Use Eclipse Temurin JDK 26. The starter POM intentionally targets Java 17 bytecode and uses JUnit Jupiter 5.10.2. Running Maven and the tests on JDK 26 does not require changing that compilation target.
+Testing an airplane simulator with JUnit 5 and Mockito. The assignment focuses on replacing aircraft components with test doubles, controlling their responses, and verifying the aircraft's interactions with them during normal operation and failures.
 
-On Amin's Windows installation, Temurin 26.0.2.1+1 is installed separately under `%LOCALAPPDATA%/Programs/Eclipse Adoptium/`. Java 21 remains installed for later use. Temurin 26 is the selected terminal default. Maven 3.9.16 is bundled with IntelliJ IDEA 2026.2.0.1; its bin directory is on PATH.
+- [Assignment description](CA2/SWT-05-CA2.pdf)
+- [Project and simulator overview](CA2/airplane-simulator/README.md)
+- Project directory: `CA2/airplane-simulator`
+- [Original starter repository](https://github.com/UT-SWT/F05-CA2)
+- Imported starter commit: `ee770866a602de06785bcd8a06585398d50a52e2`
 
-After changing environment variables, open a fresh terminal (restart IntelliJ before opening a new embedded terminal).
+## Build and run
 
-From `CA1/autopilot` in PowerShell:
+The projects use Maven and target Java 17 bytecode. The current setup has been verified with JDK 26 and Maven 3.9.
 
-```powershell
+Install a JDK and Maven, set `JAVA_HOME` to the JDK installation, and make Java and Maven available on `PATH`. Check the selected versions with:
+
+```sh
 java --version
 javac --version
 mvn --version
-mvn clean test
 ```
 
-`JAVA_HOME` selects the JDK used by Maven. PATH makes `java`, `javac`, and `mvn` available as ordinary commands. No helper script is needed.
+Run an assignment's tests from the repository root:
 
-## IntelliJ settings
+```sh
+# CA1
+mvn -f CA1/autopilot/pom.xml clean test
 
-Local IDE configuration is excluded from Git. On another machine configure:
+# CA2
+mvn -f CA2/airplane-simulator/pom.xml clean test
+```
 
-1. File > Project Structure > Project > SDK: add your Temurin 26 installation.
-2. Settings > Build, Execution, Deployment > Build Tools > Maven: use bundled Maven (or your own Maven).
-3. Maven > Importing > JDK for importer: choose Temurin 26 / Project JDK.
-4. Maven > Runner > JRE: choose Temurin 26 / Project JDK.
+Maven downloads the dependencies on the first run. Build output and test reports are generated in each project's `target` directory and excluded from version control.
 
-The project SDK supports Java editing, compilation, and default run/test configurations. The importer JDK runs Maven synchronization. The runner JRE runs Maven goals. These are separate from the IDE's own runtime and the Java selected by an ordinary terminal.
+## Dependencies and JDK compatibility
 
-## Starting baseline
+Each project's `pom.xml` defines its own dependencies:
 
-The unmodified starter passed all 5 supplied AutoDriver tests on Temurin 26.0.2.1+1 with Maven 3.9.16 on 2026-10-21. This confirms the initial build works; it does not establish that the supplied tests are well designed.
+| Assignment | JUnit Jupiter | Mockito |
+| --- | --- | --- |
+| CA1 | 5.10.2 | Not used |
+| CA2 | 5.11.4 | 5.14.2 |
 
-## Collaboration
+The different JUnit versions belong to separate Maven projects and do not conflict in the documented builds.
 
-Clone this private repository after accepting the invitation. Use a branch per task, commit small changes, push the branch, and review it with a pull request before merging. Pull main before beginning new work. Keep generated target directories and local IDE files out of commits.
+CA2 currently includes JVM options for experimental Byte Buddy support and dynamic agent loading on newer JDKs. The tests pass on JDK 26, but Mockito agent and deprecated API warnings remain. These options do not guarantee compatibility with every JDK; Java 17 is the compilation target, not a claim that the current test configuration runs on every Java 17-or-newer runtime.
 
-## Assignment checklist
+## Licenses
 
-- Add unit tests for AdaptiveCruise, BrakeController, GearBox, and SteeringController.
-- Review and improve the existing AutoDriver tests for their existing scenarios.
-- Use consistent descriptive test naming and independent tests.
-- Use ValueSource, EnumSource, CsvSource, CsvFileSource, and MethodSource on different methods.
-- Constructors and getters/setters do not need tests.
-- Understand and be able to explain each test for the oral evaluation.
+The starter projects' MIT licenses are retained in [CA1](CA1/autopilot/LICENSE) and [CA2](CA2/airplane-simulator/LICENSE).

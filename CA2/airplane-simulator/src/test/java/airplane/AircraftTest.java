@@ -11,6 +11,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -19,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class AircraftTest {
@@ -90,9 +93,11 @@ class AircraftTest {
     void prepareForTakeoff_whenNavigationThrowsException_propagatesAndRemainsGrounded() {
         when(engine.isOperational()).thenReturn(true);
         when(fuelSystem.hasEnoughFuel()).thenReturn(true);
-        when(navigationSystem.isRouteAvailable())
-                .thenThrow(new IllegalStateException("Navigation sensor hardware fault"));
-        assertThrows(IllegalStateException.class, () -> aircraft.prepareForTakeoff());
+        IllegalStateException failure = new IllegalStateException("Navigation sensor hardware fault");
+        when(navigationSystem.isRouteAvailable()).thenThrow(failure);
+            IllegalStateException thrown =
+                assertThrows(IllegalStateException.class, () -> aircraft.prepareForTakeoff());
+        assertSame(failure, thrown);
         assertEquals(FlightStatus.GROUNDED, aircraft.getStatus());
         verify(navigationSystem, times(1)).isRouteAvailable();
     }
@@ -116,8 +121,10 @@ class AircraftTest {
         stubReadyForTakeoff();
         aircraft.prepareForTakeoff();
 
-        doThrow(new IllegalStateException("Engine failed during ignition")).when(engine).start();
-        assertThrows(FlightException.class, () -> aircraft.takeOff());
+        IllegalStateException failure = new IllegalStateException("Engine failed during ignition");
+        doThrow(failure).when(engine).start();
+        FlightException thrown = assertThrows(FlightException.class, () -> aircraft.takeOff());
+        assertSame(failure, thrown.getCause());
         assertEquals(FlightStatus.ABORTED, aircraft.getStatus());
         verify(engine, times(1)).start();
         verify(landingGear, times(0)).retract();
@@ -130,13 +137,15 @@ class AircraftTest {
         aircraft.prepareForTakeoff();
         aircraft.takeOff();
 
-        when(engine.isOperational()).thenReturn(true);
         doNothing().when(fuelSystem).consumeFuel(any(Double.class));
         aircraft.cruise(150.0);
         aircraft.cruise(85.5);
         assertEquals(FlightStatus.IN_FLIGHT, aircraft.getStatus());
         verify(fuelSystem, times(2)).consumeFuel(any(Double.class));
+        verify(fuelSystem, times(1)).consumeFuel(150.0);
+        verify(fuelSystem, times(1)).consumeFuel(85.5);
         verify(landingGear, times(0)).deploy();
+        verify(engine, times(0)).stop();
     }
 
     @Test
@@ -164,14 +173,13 @@ class AircraftTest {
         aircraft.prepareForTakeoff();
         aircraft.takeOff();
 
-        when(engine.isOperational()).thenReturn(true);
-        doThrow(new IllegalStateException("Not enough fuel."))
-                .when(fuelSystem).consumeFuel(any(Double.class));
-        doNothing().when(landingGear).deploy();
-        doNothing().when(engine).stop();
-        assertThrows(FlightException.class, () -> aircraft.cruise(500.0));
+        IllegalStateException failure = new IllegalStateException("Not enough fuel.");
+        doThrow(failure).when(fuelSystem).consumeFuel(any(Double.class));
+        FlightException thrown = assertThrows(FlightException.class, () -> aircraft.cruise(500.0));
+        assertSame(failure, thrown.getCause());
         assertEquals(FlightStatus.LANDED, aircraft.getStatus());
         verify(fuelSystem, times(1)).consumeFuel(any(Double.class));
+        verify(fuelSystem, times(1)).consumeFuel(500.0);
         verify(landingGear, times(1)).deploy();
         verify(engine, times(1)).stop();
     }
@@ -197,19 +205,47 @@ class AircraftTest {
     }
 
     @Test
-    @DisplayName("Test 10: invalid lifecycle calls and non-positive fuel amounts throw expected exceptions")
-    void invalidOperations_whenLifecycleCallsOrFuelAmountsAreInvalid_throwsExpectedExceptions() {
-        assertThrows(FlightException.class, () -> aircraft.takeOff());
-        assertThrows(FlightException.class, () -> aircraft.cruise(50.0));
-        assertThrows(FlightException.class, () -> aircraft.land());
-        assertThrows(FlightException.class, () -> aircraft.emergencyLand());
+    @DisplayName("Test 10: lifecycle operations reject a grounded aircraft without touching components")
+    void lifecycleOperations_whenGrounded_rejectWithoutSideEffects() {
+        assertAll("Grounded lifecycle operations",
+                () -> assertThrows(FlightException.class, () -> aircraft.takeOff(), "takeOff"),
+                () -> assertThrows(FlightException.class, () -> aircraft.cruise(50.0), "cruise"),
+                () -> assertThrows(FlightException.class, () -> aircraft.land(), "land"),
+                () -> assertThrows(FlightException.class, () -> aircraft.emergencyLand(), "emergencyLand"),
+                () -> assertEquals(FlightStatus.GROUNDED, aircraft.getStatus()),
+                () -> verifyNoInteractions(engine, fuelSystem, landingGear, navigationSystem));
+    }
+
+    @Test
+    @DisplayName("Test 11: cruise rejects non-positive fuel amounts without side effects")
+    void cruise_whenFuelAmountIsNonPositive_rejectsWithoutSideEffects() {
         stubReadyForTakeoff();
         aircraft.prepareForTakeoff();
         aircraft.takeOff();
+        assertAll("Non-positive fuel amounts",
+                () -> assertThrows(IllegalArgumentException.class, () -> aircraft.cruise(0.0), "zero"),
+                () -> assertThrows(IllegalArgumentException.class, () -> aircraft.cruise(-25.0), "negative"),
+                () -> assertEquals(FlightStatus.IN_FLIGHT, aircraft.getStatus()),
+                () -> verify(engine, times(1)).isOperational(),
+                () -> verify(engine, times(0)).stop(),
+                () -> verify(landingGear, times(0)).deploy(),
+                () -> verify(fuelSystem, times(0)).consumeFuel(any(Double.class)));
+    }
 
-        assertThrows(IllegalArgumentException.class, () -> aircraft.cruise(0.0));
-        assertThrows(IllegalArgumentException.class, () -> aircraft.cruise(-25.0));
-        verify(fuelSystem, times(0)).consumeFuel(any(Double.class));
+    @Test
+    @DisplayName("Test 12: takeOff aborts and preserves the cause when gear retraction fails")
+    void takeOff_whenGearRetractionThrowsException_abortsAndPreservesCause() {
+        stubReadyForTakeoff();
+        aircraft.prepareForTakeoff();
+        IllegalStateException failure = new IllegalStateException("Landing gear jammed");
+        doThrow(failure).when(landingGear).retract();
+
+        FlightException thrown = assertThrows(FlightException.class, () -> aircraft.takeOff());
+
+        assertEquals(FlightStatus.ABORTED, aircraft.getStatus());
+        assertSame(failure, thrown.getCause());
+        verify(engine, times(1)).start();
+        verify(landingGear, times(1)).retract();
     }
 }
 
