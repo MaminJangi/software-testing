@@ -1,6 +1,6 @@
 # Software Testing
 
-University of Tehran software testing coursework. Each assignment contains its own Maven project and assignment description.
+University of Tehran software testing coursework. Each assignment contains its own Maven project.
 
 ## Assignments
 
@@ -24,6 +24,15 @@ Testing an airplane simulator with JUnit 5 and Mockito. The assignment focuses o
 - [Original starter repository](https://github.com/UT-SWT/F05-CA2)
 - Imported starter commit: `ee770866a602de06785bcd8a06585398d50a52e2`
 
+### CA3: Code smells, refactoring, and design patterns
+
+Reviewing an elevator simulator and its supplied JUnit tests to identify code smells and design patterns.
+
+- [Project and review overview](CA3/elevator-simulator/README.md)
+- Project directory: `CA3/elevator-simulator`
+- [Original starter repository](https://github.com/UT-SWT/F05-CA3)
+- Imported starter commit: `779e5df0bd9948b0bf6b36dfabd4ab0da912d8a5`
+
 ## Build and run
 
 The projects use Maven and target Java 17 bytecode. The current setup has been verified with JDK 26 and Maven 3.9.
@@ -44,6 +53,9 @@ mvn -f CA1/autopilot/pom.xml clean test
 
 # CA2
 mvn -f CA2/airplane-simulator/pom.xml clean test
+
+# CA3
+mvn -f CA3/elevator-simulator/pom.xml clean test
 ```
 
 Maven downloads the dependencies on the first run. Build output and test reports are generated in each project's `target` directory and excluded from version control.
@@ -56,6 +68,7 @@ Each project's `pom.xml` defines its own dependencies:
 | --- | --- | --- |
 | CA1 | 5.10.2 | Not used |
 | CA2 | 5.11.4 | 5.14.2 |
+| CA3 | 5.10.2 | Not used |
 
 The different JUnit versions belong to separate Maven projects and do not conflict in the documented builds.
 
@@ -63,4 +76,4 @@ CA2 currently includes JVM options for experimental Byte Buddy support and dynam
 
 ## Licenses
 
-The starter projects' MIT licenses are retained in [CA1](CA1/autopilot/LICENSE) and [CA2](CA2/airplane-simulator/LICENSE).
+The starter projects' MIT licenses are retained in [CA1](CA1/autopilot/LICENSE), [CA2](CA2/airplane-simulator/LICENSE), and [CA3](CA3/elevator-simulator/LICENSE).
