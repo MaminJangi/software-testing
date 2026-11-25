@@ -29,7 +29,7 @@ Testing an airplane simulator with JUnit 5 and Mockito. The assignment focuses o
 Reviewing an elevator simulator and its supplied JUnit tests to identify code smells and design patterns.
 
 - [Assignment description](CA3/SWT-05-CA3.pdf)
-- [Review report (PDF)](CA3/report/CA3_810102454_810102420.pdf)
+- [Review report (PDF)](CA3/report/CA3_810102454_810102429.pdf)
 - [Editable report (Word)](CA3/report/CA3_Review.docx)
 - [Project and review overview](CA3/elevator-simulator/README.md)
 - Project directory: `CA3/elevator-simulator`
