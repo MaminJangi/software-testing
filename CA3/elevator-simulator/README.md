@@ -2,6 +2,8 @@
 
 A small elevator simulator with JUnit tests for reviewing code smells and design patterns.
 
+See the [assignment description](../SWT-05-CA3.pdf) for the full brief.
+
 ## Project structure
 
 - `src/main/java` contains the elevator model, service, hardware interfaces and adapters, event notifications, and application wiring.
